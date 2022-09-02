@@ -22,6 +22,7 @@ export default function App() {
   const [players, setPlayer] = useState<IPlayerType[]>([]);
   const [spaces, setSpaces] = useState<ISpaceType[]>([]);
   const [currentRound, setCurrentRound] = useState<ICurrentRoundType>();
+
   console.log(spaces, players, currentRound);
 
   useEffect(() => {
@@ -38,6 +39,60 @@ export default function App() {
     setPlayer([{ levels }, { levels }]);
     setCurrentRound({ player: "p1" });
   }, []);
+
+  useEffect(() => {
+    const horizontal1 = [0, 1, 2];
+    const horizontal2 = [3, 4, 5];
+    const horizontal3 = [6, 7, 8];
+    const vertical1 = [0, 3, 6];
+    const vertical2 = [1, 4, 7];
+    const vertical3 = [2, 5, 8];
+    const diagonal = [0, 4, 8];
+
+    const possibilidades = [
+      horizontal1,
+      horizontal2,
+      horizontal3,
+      vertical1,
+      vertical2,
+      vertical3,
+      diagonal,
+    ];
+
+    const gameIsOver = possibilidades.some((possibilidade) => {
+      var initialPlayer: any;
+
+      return possibilidade.every((position, index) => {
+        const player = spaces[position]?.markedBy;
+        if (player === undefined) {
+          return false;
+        }
+
+        if (index === 0) {
+          initialPlayer = player;
+        }
+
+        return player === initialPlayer;
+      });
+    });
+
+    console.log({ gameIsOver });
+
+    if (gameIsOver) {
+      alert(`Jogador ${currentRound?.player} venceu!!!`);
+
+      initializeGame();
+
+      return;
+    }
+    setCurrentRound((state) => {
+      if (state?.player === "p1") {
+        return { player: "p2" };
+      } else {
+        return { player: "p1" };
+      }
+    });
+  }, [spaces]);
 
   const handleSetPosition = useCallback(
     (position: number) => {
@@ -92,14 +147,6 @@ export default function App() {
           return [p1, { levels: p22 }];
         });
       }
-
-      setCurrentRound((state) => {
-        if (state?.player === "p1") {
-          return { player: "p2" };
-        } else {
-          return { player: "p1" };
-        }
-      });
     },
     [currentRound],
   );

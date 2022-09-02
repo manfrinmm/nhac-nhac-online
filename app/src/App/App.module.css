@@ -30,11 +30,10 @@
 
 .space {
   @apply bg-secondary;
-  /* @apply m-auto; */
   @apply w-60 h-60;
 
   @apply cursor-pointer;
 
   @apply text-slate-800;
-  @apply flex items-center justify-center text-slate-800;
+  @apply flex items-center justify-center;
 }
