@@ -1,5 +1,14 @@
 import { useCallback, useEffect, useState } from "react";
 import styles from "./App.module.css";
+import Lottie from "react-lottie";
+
+import p1AnimationWait from "../assets/chars/p1/waiting.json";
+import p1AnimationSelected from "../assets/chars/p1/selected.json";
+import p1AnimationDeployed from "../assets/chars/p1/deployed.json";
+
+import p2AnimationWait from "../assets/chars/p2/waiting.json";
+import p2AnimationSelected from "../assets/chars/p2/selected.json";
+import p2AnimationDeployed from "../assets/chars/p2/deployed.json";
 
 type IPlayerType = {
   levels: {
@@ -37,7 +46,15 @@ export default function App() {
     }));
 
     setPlayer([{ levels }, { levels }]);
-    setCurrentRound({ player: "p1" });
+    setCurrentRound((state) => {
+      console.log({ state });
+
+      if (state?.player === "p1") {
+        return { player: "p2" };
+      } else {
+        return { player: "p1" };
+      }
+    });
   }, []);
 
   useEffect(() => {
@@ -170,7 +187,7 @@ export default function App() {
         Agora é a vez do <strong> jogador {currentRound?.player}</strong>
       </h2>
 
-      <div className="flex">
+      <div className="flex w-max">
         <section className={styles.levels}>
           <p>Jogador P1</p>
           {players[0]?.levels.map((level, index) => (
@@ -185,7 +202,28 @@ export default function App() {
                 handleSelectLevel("p1", level.type);
               }}
             >
-              {level.isAvailable ? level.type : " "}
+              {level.isAvailable && (
+                <>
+                  <Lottie
+                    options={{
+                      animationData:
+                        currentRound?.player === "p1" &&
+                        currentRound?.level === level.type
+                          ? p1AnimationSelected
+                          : p1AnimationWait,
+
+                      loop: true,
+                      autoplay: true,
+                      rendererSettings: {
+                        preserveAspectRatio: "xMidYMid slice",
+                      },
+                    }}
+                    // height={level.type * 30 * 0.9}
+                    width={(level.type / 3) * 20 * 4.9}
+                  />
+                  <p>{level.type}</p>
+                </>
+              )}
             </div>
           ))}
         </section>
@@ -199,7 +237,25 @@ export default function App() {
                 handleSetPosition(index);
               }}
             >
-              {space.markedBy} {space.level}
+              {space.markedBy && (
+                <Lottie
+                  options={{
+                    animationData:
+                      space.markedBy === "p1"
+                        ? p1AnimationDeployed
+                        : p2AnimationDeployed,
+
+                    loop: true,
+                    autoplay: true,
+                    rendererSettings: {
+                      preserveAspectRatio: "xMidYMid slice",
+                    },
+                  }}
+                  // height={space.level * 30 * 0.9}
+                  // width={(space.level || 1 / 3) * 20 * 4.9}
+                />
+              )}
+              <p className="font-bold text-lg"> {space.level}</p>
             </div>
           ))}
         </section>
@@ -218,7 +274,28 @@ export default function App() {
                 handleSelectLevel("p2", level.type);
               }}
             >
-              {level.isAvailable ? level.type : " "}
+              {level.isAvailable && (
+                <>
+                  <Lottie
+                    options={{
+                      animationData:
+                        currentRound?.player === "p2" &&
+                        currentRound?.level === level.type
+                          ? p2AnimationSelected
+                          : p2AnimationWait,
+
+                      loop: true,
+                      autoplay: true,
+                      rendererSettings: {
+                        preserveAspectRatio: "xMidYMid slice",
+                      },
+                    }}
+                    height={level.type * 28 * 1.1}
+                    width={(level.type / 4) * 36 * 2.5}
+                  />
+                  <p>{level.type}</p>
+                </>
+              )}
             </div>
           ))}
         </section>
