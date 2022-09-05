@@ -1,42 +1,39 @@
+/* eslint-disable react/no-array-index-key */
+
 import { useCallback, useEffect, useState } from "react";
-import styles from "./App.module.css";
 import Lottie from "react-lottie";
 
-import p1AnimationWait from "../assets/chars/p1/waiting.json";
-import p1AnimationSelected from "../assets/chars/p1/selected.json";
 import p1AnimationDeployed from "../assets/chars/p1/deployed.json";
-
-import p2AnimationWait from "../assets/chars/p2/waiting.json";
-import p2AnimationSelected from "../assets/chars/p2/selected.json";
+import p1AnimationSelected from "../assets/chars/p1/selected.json";
+import p1AnimationWait from "../assets/chars/p1/waiting.json";
 import p2AnimationDeployed from "../assets/chars/p2/deployed.json";
+import p2AnimationSelected from "../assets/chars/p2/selected.json";
+import p2AnimationWait from "../assets/chars/p2/waiting.json";
+import styles from "./App.module.css";
 
-type IPlayerType = {
-  levels: {
+interface IPlayerType {
+  levels: Array<{
     type: number;
     isAvailable: boolean;
-  }[];
-};
+  }>;
+}
 
-type ISpaceType = {
+interface ISpaceType {
   markedBy: "p1" | "p2" | undefined;
   level?: number;
-};
+}
 
-type ICurrentRoundType = {
+interface ICurrentRoundType {
   player?: "p1" | "p2";
   level?: number;
-};
+}
 
 export default function App() {
   const [players, setPlayer] = useState<IPlayerType[]>([]);
   const [spaces, setSpaces] = useState<ISpaceType[]>([]);
   const [currentRound, setCurrentRound] = useState<ICurrentRoundType>();
 
-  console.log(spaces, players, currentRound);
-
-  useEffect(() => {
-    initializeGame();
-  }, []);
+  // console.log(spaces, players, currentRound);
 
   const initializeGame = useCallback(() => {
     setSpaces(new Array(9).fill({}));
@@ -46,16 +43,19 @@ export default function App() {
     }));
 
     setPlayer([{ levels }, { levels }]);
-    setCurrentRound((state) => {
-      console.log({ state });
+    setCurrentRound(state => {
+      // console.log({ state });
 
       if (state?.player === "p1") {
         return { player: "p2" };
-      } else {
-        return { player: "p1" };
       }
+      return { player: "p1" };
     });
   }, []);
+
+  useEffect(() => {
+    initializeGame();
+  }, [initializeGame]);
 
   useEffect(() => {
     const horizontal1 = [0, 1, 2];
@@ -76,8 +76,8 @@ export default function App() {
       diagonal,
     ];
 
-    const gameIsOver = possibilidades.some((possibilidade) => {
-      var initialPlayer: any;
+    const gameIsOver = possibilidades.some(possibilidade => {
+      let initialPlayer: any;
 
       return possibilidade.every((position, index) => {
         const player = spaces[position]?.markedBy;
@@ -96,30 +96,42 @@ export default function App() {
     console.log({ gameIsOver });
 
     if (gameIsOver) {
-      alert(`Jogador ${currentRound?.player} venceu!!!`);
+      alert(`Jogador ${currentRound?.player ?? ""} venceu!!!`);
 
       initializeGame();
 
       return;
     }
-    setCurrentRound((state) => {
+    setCurrentRound(state => {
       if (state?.player === "p1") {
         return { player: "p2" };
-      } else {
-        return { player: "p1" };
       }
+      return { player: "p1" };
     });
-  }, [spaces]);
+  }, [initializeGame, spaces]);
 
   const handleSetPosition = useCallback(
     (position: number) => {
-      if (!!!currentRound?.level) {
+      if (currentRound?.level === undefined) {
         alert("Selecione um level para marcar uma posição!");
 
         return;
       }
 
-      setSpaces((state) =>
+      const isValidMove = spaces.every((space, index) => {
+        if (position === index && !!currentRound.level && space.level) {
+          return !(space.level >= currentRound.level);
+        }
+
+        return true;
+      });
+
+      if (!isValidMove) {
+        alert("Jogada inválida");
+        return;
+      }
+
+      setSpaces(state =>
         state.map((space, index) => {
           if (position === index) {
             return { markedBy: currentRound.player, level: currentRound.level };
@@ -130,10 +142,10 @@ export default function App() {
       );
 
       if (currentRound.player === "p1") {
-        setPlayer((state) => {
+        setPlayer(state => {
           const [p1, p2] = state;
 
-          const p12 = p1.levels.map((level) => {
+          const p12 = p1.levels.map(level => {
             if (level.type === currentRound.level) {
               return {
                 ...level,
@@ -147,10 +159,10 @@ export default function App() {
           return [{ levels: p12 }, p2];
         });
       } else {
-        setPlayer((state) => {
+        setPlayer(state => {
           const [p1, p2] = state;
 
-          const p22 = p2.levels.map((level) => {
+          const p22 = p2.levels.map(level => {
             if (level.type === currentRound.level) {
               return {
                 ...level,
@@ -165,7 +177,7 @@ export default function App() {
         });
       }
     },
-    [currentRound],
+    [currentRound, spaces],
   );
 
   const handleSelectLevel = useCallback(
@@ -181,6 +193,16 @@ export default function App() {
     [currentRound],
   );
 
+  function calcSize(level: number, max: number): number {
+    // console.log({ level, calc, calc2, calc3 });
+
+    const calc4 = max - 6 * (level + 1);
+    console.log({ level, calc4 });
+
+    // 80px max
+    return calc4;
+  }
+
   return (
     <div className="">
       <h2 className="mb-10 text-3xl">
@@ -189,52 +211,67 @@ export default function App() {
 
       <div className="flex w-max">
         <section className={styles.levels}>
-          <p>Jogador P1</p>
+          <p>Time dos Magos</p>
           {players[0]?.levels.map((level, index) => (
             <div
               key={index}
-              className={`${styles.level}  ${
+              className={`${styles.level} ${
                 currentRound?.player === "p1" &&
-                currentRound?.level === level.type &&
-                styles.levelSelected
+                currentRound?.level === level.type
+                  ? styles.levelSelected
+                  : ""
               }`}
-              onClick={() => {
-                handleSelectLevel("p1", level.type);
+              style={{
+                padding: `${calcSize(level.type || 0, 30)}px`,
+                width: 220,
+                height: 220,
               }}
             >
-              {level.isAvailable && (
-                <>
-                  <Lottie
-                    options={{
-                      animationData:
-                        currentRound?.player === "p1" &&
-                        currentRound?.level === level.type
-                          ? p1AnimationSelected
-                          : p1AnimationWait,
+              <button
+                type="button"
+                className=""
+                onClick={() => {
+                  handleSelectLevel("p1", level.type);
+                }}
+              >
+                {level.isAvailable && (
+                  <>
+                    <Lottie
+                      options={{
+                        animationData:
+                          currentRound?.player === "p1" &&
+                          currentRound?.level === level.type
+                            ? p1AnimationSelected
+                            : p1AnimationWait,
 
-                      loop: true,
-                      autoplay: true,
-                      rendererSettings: {
-                        preserveAspectRatio: "xMidYMid slice",
-                      },
-                    }}
-                    // height={level.type * 30 * 0.9}
-                    width={(level.type / 3) * 20 * 4.9}
-                  />
-                  <p>{level.type}</p>
-                </>
-              )}
+                        loop: true,
+                        autoplay: true,
+                        rendererSettings: {
+                          preserveAspectRatio: "xMidYMid slice",
+                        },
+                      }}
+                      // height={level.type * 30 * 0.9}
+                      // width={(level.type / 3) * 20 * 4.9}
+                    />
+                    <p>{level.type}</p>
+                  </>
+                )}
+              </button>
             </div>
           ))}
         </section>
 
         <section className={styles.table}>
           {spaces.map((space, index) => (
-            <div
+            <button
+              type="button"
               key={index}
               className={styles.space}
               onClick={() => {
                 handleSetPosition(index);
+              }}
+              style={{
+                padding: `${calcSize(space.level || 0, 80)}px`,
               }}
             >
               {space.markedBy && (
@@ -251,31 +288,41 @@ export default function App() {
                       preserveAspectRatio: "xMidYMid slice",
                     },
                   }}
-                  // height={space.level * 30 * 0.9}
-                  // width={(space.level || 1 / 3) * 20 * 4.9}
+                  // height={((space.level || 1) / 1) * 50}
+                  // width={((space.level || 1) + 20 / 1) * 1}
+                  // height={`${
+                  //   space.level || 0 < 2
+                  //     ? ((space.level || 1) / 4) * 100
+                  //     : ((space.level || 1) / 2) * 100
+                  // }%`}
+                  // width={`${
+                  //   space.level || 0 < 2
+                  //     ? ((space.level || 1) / 6) * 100
+                  //     : ((space.level || 1) / 6) * 100
+                  // }%`}
                 />
               )}
               <p className="font-bold text-lg"> {space.level}</p>
-            </div>
+            </button>
           ))}
         </section>
 
         <section className={styles.levels}>
-          <p>Jogador P2</p>
+          <p>Time dos Monstros</p>
           {players[1]?.levels.map((level, index) => (
-            <div
-              key={index}
-              className={`${styles.level}  ${
-                currentRound?.player === "p2" &&
-                currentRound?.level === level.type &&
-                styles.levelSelected
-              }`}
-              onClick={() => {
-                handleSelectLevel("p2", level.type);
-              }}
-            >
+            <div key={index}>
               {level.isAvailable && (
-                <>
+                <button
+                  type="button"
+                  className={`${styles.level}  ${
+                    currentRound?.player === "p2" &&
+                    currentRound?.level === level.type &&
+                    styles.levelSelected
+                  }`}
+                  onClick={() => {
+                    handleSelectLevel("p2", level.type);
+                  }}
+                >
                   <Lottie
                     options={{
                       animationData:
@@ -294,7 +341,7 @@ export default function App() {
                     width={(level.type / 4) * 36 * 2.5}
                   />
                   <p>{level.type}</p>
-                </>
+                </button>
               )}
             </div>
           ))}

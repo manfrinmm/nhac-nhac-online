@@ -1,44 +1,30 @@
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
-}
-
 .levels {
-  /* @apply space-y-8; */
   @apply flex flex-col items-center;
 }
 
 .level {
-  @apply cursor-pointer;
-
-  @apply transition-all;
+  /* @apply cursor-pointer w-full; */
 }
 
-.levelSelected {
-  @apply bg-primary  p-2 rounded-lg;
+.levelSelected button {
+  @apply bg-primary  rounded-lg transition-all;
 }
 
 .table {
   @apply bg-primary h-max;
   @apply grid grid-cols-3 grid-rows-3 gap-8;
   @apply mx-16;
+  @apply rounded-lg;
+}
+
+.table button {
+  @apply bg-secondary;
 }
 
 .space {
-  @apply bg-secondary;
   @apply w-72 h-72;
 
-  @apply cursor-pointer;
-
   @apply text-slate-800;
-  /* @apply flex items-center justify-center; */
 
-  @apply flex flex-col items-center;
+  @apply flex flex-col items-center justify-center;
 }
